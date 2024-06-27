@@ -43,9 +43,13 @@ An OpenAPI-Specification is available [here](./openapi.yaml). The API is secured
 
 #### Assign an ip address to a network interface
 **Path:** /add
+
 **Method:** POST
+
 **Content-Type:** `application/json`
+
 **Body:** `{"address": "...", "interface_name": "..."}`
+
 A human readable message will be returned on success and on errors.
 
 ##### Example
@@ -54,10 +58,14 @@ curl -X POST --cacert server.crt --cert client.crt --key client.key -H "Content-
 ```
 
 #### Ensure an ip address is absent on a network interface
-**Path:** /add
+**Path:** /delete
+
 **Method:** POST
+
 **Content-Type:** `application/json`
+
 **Body:** `{"address": "...", "interface_name": "..."}`
+
 A human readable message will be returned on success and on errors.
 
 ##### Example
