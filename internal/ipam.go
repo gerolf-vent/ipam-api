@@ -90,14 +90,15 @@ func AdvertiseAddress(link NetworkLink, address CIDRAddress) error {
 	defer h.Close()
 
 	buffer := gopacket.NewSerializeBuffer()
-	opts := gopacket.SerializeOptions{}
-
-	ethernetLayer := &layers.Ethernet{
-		SrcMAC: (*link).Attrs().HardwareAddr,
-		DstMAC: net.HardwareAddr{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-	}
+	opts := gopacket.SerializeOptions{FixLengths: true, ComputeChecksums: true}
 
 	if address.IP.To4() != nil {  // It's an IPv4 address
+		ethLayer := &layers.Ethernet{
+			SrcMAC:       (*link).Attrs().HardwareAddr,
+			DstMAC:       net.HardwareAddr{0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+			EthernetType: layers.EthernetTypeARP,
+		}
+
 		arpLayer := &layers.ARP{
 			AddrType:          layers.LinkTypeEthernet,
 			Protocol:          layers.EthernetTypeIPv4,
@@ -105,26 +106,40 @@ func AdvertiseAddress(link NetworkLink, address CIDRAddress) error {
 			ProtAddressSize:   4,
 			Operation:         layers.ARPRequest,
 			SourceHwAddress:   (*link).Attrs().HardwareAddr,
-			SourceProtAddress: address.IP,
-			DstHwAddress:      net.HardwareAddr{0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-			DstProtAddress:    address.IP,
+			SourceProtAddress: address.IP.To4(),
+			DstHwAddress:      net.HardwareAddr{0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+			DstProtAddress:    address.IP.To4(),
 		}
 
-		err = gopacket.SerializeLayers(buffer, opts,
-			ethernetLayer,
+		if err := gopacket.SerializeLayers(buffer, opts,
+			ethLayer,
 			arpLayer,
-		)
-		if err != nil {
+		); err != nil {
 			return err
 		}
 	} else {  // It's an IPv6 address
+		ethLayer := &layers.Ethernet{
+			SrcMAC:       (*link).Attrs().HardwareAddr,
+			DstMAC:       net.HardwareAddr{0x33, 0x33, 0x00, 0x00, 0x00, 0x01},
+			EthernetType: layers.EthernetTypeIPv6,
+		}
+
+		ipv6Layer := &layers.IPv6{
+			Version:    6,
+			SrcIP:      address.IP,
+			DstIP:      net.IPv6linklocalallnodes,
+			NextHeader: layers.IPProtocolICMPv6,
+			HopLimit:   255,
+		}
+
 		icmpv6Layer := &layers.ICMPv6{
 			TypeCode: layers.CreateICMPv6TypeCode(layers.ICMPv6TypeNeighborAdvertisement, 0),
 		}
+		icmpv6Layer.SetNetworkLayerForChecksum(ipv6Layer)
 
 		icmpv6NALayer := &layers.ICMPv6NeighborAdvertisement{
+			Flags:         0x20,
 			TargetAddress: address.IP,
-			Flags: 0x80 | 0x20,
 			Options: []layers.ICMPv6Option{
 				layers.ICMPv6Option{
 					Type: layers.ICMPv6OptTargetAddress,
@@ -133,12 +148,12 @@ func AdvertiseAddress(link NetworkLink, address CIDRAddress) error {
 			},
 		}
 
-		err = gopacket.SerializeLayers(buffer, opts,
-			ethernetLayer,
+		if err := gopacket.SerializeLayers(buffer, opts,
+			ethLayer,
+			ipv6Layer,
 			icmpv6Layer,
 			icmpv6NALayer,
-		)
-		if err != nil {
+		); err != nil {
 			return err
 		}
 	}
