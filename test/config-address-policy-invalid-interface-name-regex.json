@@ -1,0 +1,12 @@
+{
+	"port": 44812,
+	"client_ca_certificate_path": "client-ca.crt",
+	"server_certificate_path": "server.crt",
+	"server_key_path": "server.key",
+	"address_policies": [
+		{
+			"ip_network": "fd69:decd:7b66:8220::/64",
+			"interface_name_regex": "*"
+		}
+	]
+}

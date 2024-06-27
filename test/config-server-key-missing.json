@@ -1,0 +1,11 @@
+{
+	"port": 7789,
+	"client_ca_certificate_path": "client-ca.crt",
+	"server_certificate_path": "server.crt",
+	"address_policies": [
+		{
+			"ip_network": "127.0.1.0/24",
+			"interface_name_regex": "lo"
+		}
+	]
+}

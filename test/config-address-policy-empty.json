@@ -1,0 +1,8 @@
+{
+	"port": 7789,
+	"client_ca_certificate_path": "client-ca.crt",
+	"server_certificate_path": "server.crt",
+	"server_key_path": "server.key",
+	"address_policies": [
+	]
+}

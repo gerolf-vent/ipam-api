@@ -1,0 +1,11 @@
+{
+	"port": 7789,
+	"server_certificate_path": "server.crt",
+	"server_key_path": "server.key",
+	"address_policies": [
+		{
+			"ip_network": "127.0.1.0/24",
+			"interface_name_regex": "lo"
+		}
+	]
+}
