@@ -133,3 +133,34 @@ func TestValidAuthorizationRequest(t *testing.T) {
 	assert.Equal(t, resp.StatusCode, http.StatusNotFound)
 	assert.Equal(t, string(body), "Path not found\n")
 }
+
+func TestHealthz(t *testing.T) {
+	serverCA, err := ioutil.ReadFile("../../test/server.crt")
+	if err != nil {
+		t.Fatalf("Failed to read server CA certificate: %v", err)
+	}
+	serverCAPool := x509.NewCertPool()
+	serverCAPool.AppendCertsFromPEM(serverCA)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs:            serverCAPool,
+			},
+		},
+	}
+
+	resp, err := client.Get("https://localhost:44812/healthz")
+	if err != nil {
+		t.Fatalf("Failed to send request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Failed to read response body: %v", err)
+	}
+
+	assert.Equal(t, resp.StatusCode, http.StatusOK)
+	assert.Equal(t, string(body), "Server is healthy and ready to serve\n")
+}

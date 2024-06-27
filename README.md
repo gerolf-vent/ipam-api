@@ -95,5 +95,28 @@ A human readable message will be returned on success and on errors.
 curl -X POST --cacert server.crt --cert client.crt --key client.key -H "Content-Type: application/json" -d '{"address": "fd69:decd:7b66:8220:5862:69ac:dae1:3785/64", "interface_name": "lo"}' https://localhost:44812/delete
 ```
 
+#### Health check
+<table>
+	<tr>
+		<td><b>Path</b></td>
+		<td>/healthz</td>
+	</tr>
+	<tr>
+		<td><b>Method</b></td>
+		<td>Get</td>
+	</tr>
+	<tr>
+		<td><b>Body</b></td>
+		<td><i>None</i></td>
+	</tr>
+</table>
+
+A human readable message will be returned on success and on errors.
+
+##### Example
+```sh
+curl --cacert server.crt https://localhost:44812/healthz
+```
+
 ## Testing
 The tests can be performed by `sudo capsh --caps="cap_net_admin+ep" -- -c 'NET_LINK="..." go test ./...'`. The environment variable `NET_LINK` must be set to an existing network interface to which addresses can be assigned. The `NET_ADMIN` capability is required for testing the assignment of an address on a real interface. Extensive logging is enabled to debug any errors.

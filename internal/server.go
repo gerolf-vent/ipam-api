@@ -214,6 +214,16 @@ func handleRequest(w http.ResponseWriter, r *http.Request, policy []AddressPolic
 	}
 }
 
+// Handles a health request
+func handleHealthzRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	fmt.Fprintf(w, "Server is healthy and ready to serve\n")
+}
+
 // Builds the client ca certificate pool
 func buildClientCACertificatPool(clientCACertificatePath string) (*x509.CertPool, error) {
 	clientCACertificate, err := os.ReadFile(clientCACertificatePath)
@@ -262,8 +272,12 @@ func RunServer(configFilePath string) error {
 			ClientAuth: tls.RequestClientCert,
 		},
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if authenticateRequest(w, r, clientCACertificatePool) {
-				handleRequest(w, r, config.AddressPolicies)
+			if r.URL.Path == "/healthz" {
+				handleHealthzRequest(w, r)
+			} else {
+				if authenticateRequest(w, r, clientCACertificatePool) {
+					handleRequest(w, r, config.AddressPolicies)
+				}
 			}
 		}),
 	}

@@ -86,6 +86,16 @@ paths:
             text/plain:
               schema:
                 type: string
+  /healthz:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Server is healthy and ready to serve
+          content:
+            text/plain:
+              schema:
+                type: string
 components:
   schemas:
     AddressAssignment:

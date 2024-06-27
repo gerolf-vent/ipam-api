@@ -269,3 +269,40 @@ func TestDeleteAddressToNonExistingInterfaceWithPolicyMatch(t *testing.T) {
 	assert.Equal(t, rr.Code, http.StatusInternalServerError)
 	assert.Equal(t, rr.Body.String(), "Failed to retreive interface: Link not found\n")
 }
+
+func TestInvalidMethodOnHealthz(t *testing.T) {
+	req, err := http.NewRequest("POST", "/healthz", nil)
+	if err != nil {
+		t.Fatalf("Could not create request: %v", err)
+	}
+
+	rr := httptest.NewRecorder()
+
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handleHealthzRequest(w, r)
+	}))
+	defer server.Close()
+
+	server.Config.Handler.ServeHTTP(rr, req)
+	assert.Equal(t, rr.Code, http.StatusMethodNotAllowed)
+	assert.Equal(t, rr.Body.String(), "Method Not Allowed\n")
+}
+
+func TestHealthz(t *testing.T) {
+	req, err := http.NewRequest("GET", "/healthz", nil)
+	if err != nil {
+		t.Fatalf("Could not create request: %v", err)
+	}
+
+	rr := httptest.NewRecorder()
+
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handleHealthzRequest(w, r)
+	}))
+	defer server.Close()
+
+	server.Config.Handler.ServeHTTP(rr, req)
+	assert.Equal(t, rr.Code, http.StatusOK)
+	assert.Equal(t, rr.Body.String(), "Server is healthy and ready to serve\n")
+}
+
