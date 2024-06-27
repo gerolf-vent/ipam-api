@@ -2,7 +2,7 @@
 This small HTTP server allows adding and removing ip addresses from specific network interfaces on a linux system over an HTTPS-API. A newly added address will be advertised via a unsolicited ARP (IPv4) or Neigbour-Discovery (IPv6) message to the network. Requests are authenticated via TLS client certificates and guarded by policies, that control which addresses are allowed to be managed on which network interfaces.
 
 ## Usage
-To build this program run `go build github.com/gerolf-vent/ipam-api/v2/cmd/ipam-api`. The server can be started by `ipam-api --config config.json`. Note that the server have to run with root permissions or better only with the `CAP_NET_ADMIN` capability set.
+To build this program run `go build github.com/gerolf-vent/ipam-api/v2/cmd/ipam-api`. The server can be started by `ipam-api --config config.json`. Note that the server have to run with root permissions or better only with the `CAP_NET_ADMIN` and `CAP_NET_RAW` capability set.
 
 ### Configuration
 When starting the server a configuration file must be passed via the cli argument `--config`. It's written in JSON with the following parameters:
@@ -119,4 +119,4 @@ curl --cacert server.crt https://localhost:44812/healthz
 ```
 
 ## Testing
-The tests can be performed by `sudo capsh --caps="cap_net_admin+ep" -- -c 'NET_LINK="..." go test ./...'`. The environment variable `NET_LINK` must be set to an existing network interface to which addresses can be assigned. The `NET_ADMIN` capability is required for testing the assignment of an address on a real interface. Extensive logging is enabled to debug any errors.
+The tests can be performed by `sudo capsh --caps="cap_net_admin+cap_net_raw+ep" -- -c 'NET_LINK="..." go test ./...'`. The environment variable `NET_LINK` must be set to an existing network interface to which addresses can be assigned. The `NET_ADMIN` capability is required for testing the assignment of an address on a real interface. Extensive logging is enabled to debug any errors.
