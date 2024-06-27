@@ -6,7 +6,7 @@ import (
 	"github.com/vishvananda/netlink"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	"github.com/google/gopacket/pcap"
+	"golang.org/x/sys/unix"
 	"go.uber.org/zap"
 )
 
@@ -83,16 +83,13 @@ func AddAddress(link NetworkLink, address CIDRAddress) error {
 
 // Advertises an cidr address on a network link
 func AdvertiseAddress(link NetworkLink, address CIDRAddress) error {
-	h, err := pcap.OpenLive((*link).Attrs().Name, 0, false, pcap.BlockForever)
-	if err != nil {
-		return err
-	}
-	defer h.Close()
-
+	var proto uint16
 	buffer := gopacket.NewSerializeBuffer()
 	opts := gopacket.SerializeOptions{FixLengths: true, ComputeChecksums: true}
 
 	if address.IP.To4() != nil {  // It's an IPv4 address
+		proto = unix.ETH_P_ARP
+
 		ethLayer := &layers.Ethernet{
 			SrcMAC:       (*link).Attrs().HardwareAddr,
 			DstMAC:       net.HardwareAddr{0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
@@ -118,6 +115,8 @@ func AdvertiseAddress(link NetworkLink, address CIDRAddress) error {
 			return err
 		}
 	} else {  // It's an IPv6 address
+		proto = unix.ETH_P_IPV6
+
 		ethLayer := &layers.Ethernet{
 			SrcMAC:       (*link).Attrs().HardwareAddr,
 			DstMAC:       net.HardwareAddr{0x33, 0x33, 0x00, 0x00, 0x00, 0x01},
@@ -158,9 +157,22 @@ func AdvertiseAddress(link NetworkLink, address CIDRAddress) error {
 		}
 	}
 
-	outgoingPacket := buffer.Bytes()
-	err = h.WritePacketData(outgoingPacket)
+	fd, err := unix.Socket(unix.AF_PACKET, unix.SOCK_RAW, int(proto))
 	if err != nil {
+		return err
+	}
+	defer unix.Close(fd)
+
+	sll := &unix.SockaddrLinklayer{
+		Ifindex:  (*link).Attrs().Index,
+		Protocol: proto,
+	}
+
+	if err := unix.Bind(fd, sll); err != nil {
+		return err
+	}
+
+	if err := unix.Sendto(fd, buffer.Bytes(), 0, sll); err != nil {
 		return err
 	}
 
