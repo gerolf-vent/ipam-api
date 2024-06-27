@@ -1,0 +1,100 @@
+openapi: 3.1.0
+info:
+  title: IPAM-API
+  description: Manage IP adresses over HTTPS
+  version: 1.0.0
+security:
+  - mutualTLS: []
+paths:
+  /add:
+    post:
+      summary: Assign an ip address to a network interface
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressAssignment'
+      responses:
+        '200':
+          description: Address was assigned successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+        '403':
+          description: Access denied
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+  /delete:
+    post:
+      summary: Ensure an ip address is absent on a network interface
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressAssignment'
+      responses:
+        '200':
+          description: Address was removed successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+        '403':
+          description: Access denied
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+components:
+  schemas:
+    AddressAssignment:
+      type: object
+      properties:
+        address:
+          type: string
+        interface_name:
+          type: string
+  securitySchemes:
+    mutualTLS:
+      type: mutualTLS

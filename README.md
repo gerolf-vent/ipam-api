@@ -38,5 +38,32 @@ Run `ipam-api --config config.json` with the following configuration as `config.
 }
 ```
 
+### HTTP-API
+An OpenAPI-Specification is available [here](./openapi.yaml). The API is secured by mutual TLS, so a client certificate must be send with the request for authentication.
+
+#### Assign an ip address to a network interface
+**Path:** /add
+**Method:** POST
+**Content-Type:** `application/json`
+**Body:** `{"address": "...", "interface_name": "..."}`
+A human readable message will be returned on success and on errors.
+
+##### Example
+```sh
+curl -X POST --cacert server.crt --cert client.crt --key client.key -H "Content-Type: application/json" -d '{"address": "fd69:decd:7b66:8220:5862:69ac:dae1:3785/64", "interface_name": "lo"}' https://localhost:44812/add
+```
+
+#### Ensure an ip address is absent on a network interface
+**Path:** /add
+**Method:** POST
+**Content-Type:** `application/json`
+**Body:** `{"address": "...", "interface_name": "..."}`
+A human readable message will be returned on success and on errors.
+
+##### Example
+```sh
+curl -X POST --cacert server.crt --cert client.crt --key client.key -H "Content-Type: application/json" -d '{"address": "fd69:decd:7b66:8220:5862:69ac:dae1:3785/64", "interface_name": "lo"}' https://localhost:44812/delete
+```
+
 ## Testing
 The tests can be performed by `sudo capsh --caps="cap_net_admin+ep" -- -c 'NET_LINK="..." go test ./...'`. The environment variable `NET_LINK` must be set to an existing network interface to which addresses can be assigned. The `NET_ADMIN` capability is required for testing the assignment of an address on a real interface. Extensive logging is enabled to debug any errors.
