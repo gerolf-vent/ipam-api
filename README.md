@@ -42,13 +42,24 @@ Run `ipam-api --config config.json` with the following configuration as `config.
 An OpenAPI-Specification is available [here](./openapi.yaml). The API is secured by mutual TLS, so a client certificate must be send with the request for authentication.
 
 #### Assign an ip address to a network interface
-**Path:** /add
-
-**Method:** POST
-
-**Content-Type:** `application/json`
-
-**Body:** `{"address": "...", "interface_name": "..."}`
+<table>
+	<tr>
+		<td><b>Path</b></td>
+		<td>/add</td>
+	</tr>
+	<tr>
+		<td><b>Method</b></td>
+		<td>POST</td>
+	</tr>
+	<tr>
+		<td><b>Content-Type</b></td>
+		<td>application/json</td>
+	</tr>
+	<tr>
+		<td><b>Body</b></td>
+		<td><code>{"address": "...", "interface_name": "..."}</code></td>
+	</tr>
+</table>
 
 A human readable message will be returned on success and on errors.
 
@@ -58,13 +69,24 @@ curl -X POST --cacert server.crt --cert client.crt --key client.key -H "Content-
 ```
 
 #### Ensure an ip address is absent on a network interface
-**Path:** /delete
-
-**Method:** POST
-
-**Content-Type:** `application/json`
-
-**Body:** `{"address": "...", "interface_name": "..."}`
+<table>
+	<tr>
+		<td><b>Path</b></td>
+		<td>/delete</td>
+	</tr>
+	<tr>
+		<td><b>Method</b></td>
+		<td>POST</td>
+	</tr>
+	<tr>
+		<td><b>Content-Type</b></td>
+		<td>application/json</td>
+	</tr>
+	<tr>
+		<td><b>Body</b></td>
+		<td><code>{"address": "...", "interface_name": "..."}</code></td>
+	</tr>
+</table>
 
 A human readable message will be returned on success and on errors.
 
